@@ -43,8 +43,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Locations\DarkPlace.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextAdventure\CommandPart.cs" />
+    <Compile Include="TextAdventure\Item.cs" />
+    <Compile Include="TextAdventure\IVerbable.cs" />
+    <Compile Include="TextAdventure\Location.cs" />
+    <Compile Include="TextAdventure\Player.cs" />
+    <Compile Include="TextAdventure\Prop.cs" />
+    <Compile Include="TextAdventure\Verb.cs" />
+    <Compile Include="Locations\TheCloset.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
