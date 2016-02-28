@@ -2,6 +2,8 @@
 
 namespace TheCloset.TextAdventure {
 	public abstract class Prop : IVerbable {
+		public string Name;
+
 		protected Prop(Location parent, string name, int x, int y) {
 			Name = name;
 			X = x;
@@ -10,15 +12,10 @@ namespace TheCloset.TextAdventure {
 		}
 
 		public Location Parent { get; }
-
-		public IEnumerable<Verb> Verbs => InternalVerbs;
-
 		protected List<Verb> InternalVerbs { get; } = new List<Verb>();
-
 		public int X { get; set; }
 		public int Y { get; set; }
-		
-		public string Name;
+		public IEnumerable<Verb> Verbs => InternalVerbs;
 
 		public override string ToString() {
 			return Name.Replace('_', ' ');

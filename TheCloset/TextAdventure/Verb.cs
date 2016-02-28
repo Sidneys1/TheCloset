@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 
 namespace TheCloset.TextAdventure {
 	public class Verb {
+		public Action<string> Action;
+		public CommandPart FirstPart;
+
 		public Verb(string parts, Action<string> action = null) {
 			FirstPart = CommandPart.FromArray(parts.Split(' '));
 			Action = action;
@@ -15,9 +17,12 @@ namespace TheCloset.TextAdventure {
 			Action = action;
 		}
 
+		public int Depth => FirstPart.Depth();
+		public bool Enabled { get; set; } = true;
+
 		public void Extend(string ext) {
 			var parts = ext.Split(' ');
-			if(parts[0] == FirstPart.ThisPart)
+			if (parts[0] == FirstPart.ThisPart)
 				FirstPart.Extend(parts.Skip(1).ToArray());
 		}
 
@@ -26,16 +31,8 @@ namespace TheCloset.TextAdventure {
 			if (parts[0] == FirstPart.ThisPart)
 				FirstPart.Extend(parts.Skip(1).ToArray(), p);
 		}
-		
-		public CommandPart FirstPart;
-		public Action<string> Action;
 
 		public override string ToString() => FirstPart.LevelString();
-
-		public int Depth => FirstPart.Depth();
-
 		public IEnumerable<string> GetLevel(int level) => FirstPart.GetLevel(level);
-
-		public bool Enabled { get; set; } = true;
 	}
 }

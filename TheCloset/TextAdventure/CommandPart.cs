@@ -5,28 +5,30 @@ using System.Text;
 
 namespace TheCloset.TextAdventure {
 	public class CommandPart {
-		#region Equality
-
-		protected bool Equals(CommandPart other) {
-			return CType == other.CType && Equals(_staticList, other._staticList) && Equals(_enumParts, other._enumParts) &&
-			       string.Equals(ThisPart, other.ThisPart);
-		}
-
-		public override int GetHashCode() {
-			unchecked {
-				var hashCode = (int) CType;
-				hashCode = (hashCode*397) ^ (_staticList?.GetHashCode() ?? 0);
-				hashCode = (hashCode*397) ^ (_enumParts?.GetHashCode() ?? 0);
-				hashCode = (hashCode*397) ^ (ThisPart?.GetHashCode() ?? 0);
-				return hashCode;
-			}
-		}
-
-		#endregion
-		
 		public enum CommandType {
 			StaticList,
 			Action
+		}
+
+		private readonly Func<IEnumerable<CommandPart>> _enumParts;
+		private readonly List<CommandPart> _staticList;
+		public readonly CommandType CType;
+
+		public CommandPart(string thispart, params CommandPart[] next) {
+			CType = CommandType.StaticList;
+			if (next.Length > 0 && next[0] != null) {
+				_staticList = new List<CommandPart>(next.Length);
+				_staticList.AddRange(next);
+			}
+			else
+				_staticList = new List<CommandPart>(0);
+			ThisPart = thispart;
+		}
+
+		public CommandPart(string thispart, Func<IEnumerable<CommandPart>> enumerate) {
+			CType = CommandType.Action;
+			_enumParts = enumerate;
+			ThisPart = thispart;
 		}
 
 		public IEnumerable<CommandPart> NextParts {
@@ -46,35 +48,17 @@ namespace TheCloset.TextAdventure {
 			}
 		}
 
-		public readonly CommandType CType;
-		private readonly List<CommandPart> _staticList;
-		private readonly Func<IEnumerable<CommandPart>> _enumParts;
 		public string ThisPart { get; }
 
-		public CommandPart(string thispart, params CommandPart[] next) {
-			CType = CommandType.StaticList;
-			if (next.Length >0 && next[0] != null) {
-				_staticList = new List<CommandPart>(next.Length);
-				_staticList.AddRange(next);
-			}
-			else
-				_staticList = new List<CommandPart>(0);
-			ThisPart = thispart;
+		public void AddPart(CommandPart p) {
+			_staticList.Add(p);
 		}
 
-		public CommandPart(string thispart, Func<IEnumerable<CommandPart>> enumerate) {
-			CType = CommandType.Action;
-			_enumParts = enumerate;
-			ThisPart = thispart;
-		}
-
-		public void AddPart(CommandPart p) { _staticList.Add(p);}
 		public void Extend(params string[] p) {
-			if (NextParts.Any(o=>o.ThisPart==p[0]))
-				NextParts.First(o=>o.ThisPart.Equals(p[0])).Extend(p.Skip(1).ToArray());
+			if (NextParts.Any(o => o.ThisPart == p[0]))
+				NextParts.First(o => o.ThisPart.Equals(p[0])).Extend(p.Skip(1).ToArray());
 			else if (CType == CommandType.StaticList)
 				_staticList.Add(FromArray(p));
-
 		}
 
 		public void Extend(string[] pre, CommandPart p) {
@@ -124,10 +108,15 @@ namespace TheCloset.TextAdventure {
 		}
 
 		public static CommandPart FromArray(Func<IEnumerable<CommandPart>> func, params string[] parts) {
-			return parts.Length == 1 ? new CommandPart(parts[0], func) : new CommandPart(parts[0], FromArray(func, parts.Skip(1).ToArray()));
+			return parts.Length == 1
+				? new CommandPart(parts[0], func)
+				: new CommandPart(parts[0], FromArray(func, parts.Skip(1).ToArray()));
 		}
 
-		public int Depth() { return Depth(0);}
+		public int Depth() {
+			return Depth(0);
+		}
+
 		private int Depth(int cdepth) {
 			if (!NextParts.Any())
 				return cdepth;
@@ -141,5 +130,24 @@ namespace TheCloset.TextAdventure {
 				foreach (var commandPart in NextParts.SelectMany(o => o.GetLevel(level - 1)))
 					yield return commandPart;
 		}
+
+		#region Equality
+
+		protected bool Equals(CommandPart other) {
+			return CType == other.CType && Equals(_staticList, other._staticList) && Equals(_enumParts, other._enumParts) &&
+			       string.Equals(ThisPart, other.ThisPart);
+		}
+
+		public override int GetHashCode() {
+			unchecked {
+				var hashCode = (int) CType;
+				hashCode = (hashCode*397) ^ (_staticList?.GetHashCode() ?? 0);
+				hashCode = (hashCode*397) ^ (_enumParts?.GetHashCode() ?? 0);
+				hashCode = (hashCode*397) ^ (ThisPart?.GetHashCode() ?? 0);
+				return hashCode;
+			}
+		}
+
+		#endregion
 	}
 }

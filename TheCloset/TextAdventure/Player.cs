@@ -4,26 +4,47 @@ using System.Linq;
 
 namespace TheCloset.TextAdventure {
 	public class Player : IVerbable {
+		public Player() {
+			Instance = this;
+		}
+
+		public static Player Instance { get; private set; }
+		public Location CurrentLocation { get; private set; }
+		public Dictionary<string, string> GlobalVars { get; } = new Dictionary<string, string>();
+
 		public IEnumerable<Verb> Verbs {
 			get {
-//				foreach (var internalVerb in _internalVerbs)
-//					yield return internalVerb;
+				//				foreach (var internalVerb in _internalVerbs)
+				//					yield return internalVerb;
 				foreach (var verb in CurrentLocation.Verbs)
 					yield return verb;
-				foreach (var verb in Items.SelectMany(o=>o.Verbs))
+				foreach (var verb in Items.SelectMany(o => o.Verbs))
 					yield return verb;
 			}
 		}
+
 		public event Action PlayerMoved;
+		public event Action LocationChanged;
 
-		public Location CurrentLocation { get; set; }
+		public void ChangeLocation(Location l) {
+			CurrentLocation = l;
+			LocationChanged?.Invoke();
+		}
 
-//		private readonly List<Verb> _internalVerbs = new List<Verb>();
+		public void Start() {
+			PlayerMoved?.Invoke();
+		}
+
+		#region Items
 
 		private readonly List<Item> _items = new List<Item>();
 		public IReadOnlyList<Item> Items => _items.AsReadOnly();
 
 		public void AddItem(Item i) => _items.Add(i);
+
+		#endregion
+
+		#region Position
 
 		public int X { get; private set; }
 
@@ -35,9 +56,6 @@ namespace TheCloset.TextAdventure {
 			PlayerMoved?.Invoke();
 		}
 
-
-		public void Start() {
-			PlayerMoved?.Invoke();
-		}
+		#endregion
 	}
 }

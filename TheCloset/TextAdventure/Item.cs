@@ -1,16 +1,14 @@
 ﻿using System.Collections.Generic;
 
 namespace TheCloset.TextAdventure {
-	public abstract class Item :IVerbable {
-		public Player Parent { get; }
-		public string Name { get; private set; }
+	public abstract class Item : IVerbable {
+		protected readonly List<Verb> InnerVerbs = new List<Verb>();
 
-		protected Item(Player parent, string name) {
-			Parent = parent;
+		protected Item(string name) {
 			Name = name;
 		}
 
-		protected readonly List<Verb> InnerVerbs = new List<Verb>();
+		public string Name { get; private set; }
 		public IEnumerable<Verb> Verbs => InnerVerbs;
 	}
 }
