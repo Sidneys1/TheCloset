@@ -1,38 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using TheCloset.ConsoleHelpers;
 
 namespace TheCloset.TextAdventure {
+
 	public class Verb {
+
+		#region Fields
+
 		public Action<string> Action;
 		public CommandPart FirstPart;
 
-		public Verb(string parts, Action<string> action = null) {
-			FirstPart = CommandPart.FromArray(parts.Split(' '));
+		#endregion Fields
+
+		#region Constructors
+
+		public Verb(FormattedString parts, Action<string> action = null) {
+			//FirstPart = CommandPart.FromArray(parts.Sections.Select(o=>(FormattedString)o).ToArray());
+			FirstPart = new CommandPart(parts);
 			Action = action;
 		}
 
-		public Verb(string parts, Func<IEnumerable<CommandPart>> enumerate, Action<string> action = null) {
-			FirstPart = CommandPart.FromArray(enumerate, parts.Split(' '));
+		public Verb(FormattedString parts, Func<IEnumerable<CommandPart>> enumerate, Action<string> action = null) {
+			//FirstPart = CommandPart.FromArray(enumerate, parts.Sections.Select(o => (FormattedString)o).ToArray());
+			FirstPart = new CommandPart(parts, enumerate);
 			Action = action;
 		}
+
+		#endregion Constructors
+
+		#region Properties
 
 		public int Depth => FirstPart.Depth();
 		public bool Enabled { get; set; } = true;
 
-		public void Extend(string ext) {
-			var parts = ext.Split(' ');
-			if (parts[0] == FirstPart.ThisPart)
-				FirstPart.Extend(parts.Skip(1).ToArray());
-		}
+		#endregion Properties
 
-		public void Extend(string pre, CommandPart p) {
-			var parts = pre.Split(' ');
-			if (parts[0] == FirstPart.ThisPart)
-				FirstPart.Extend(parts.Skip(1).ToArray(), p);
-		}
+		//public void Extend(FormattedString ext) {
+		//	var parts = ext.Sections;
+		//	if (parts[0].ToString() == FirstPart.ThisPart.ToString())
+		//		FirstPart.Extend(parts.Skip(1).Select(o=>(FormattedString)o).ToArray());
+		//}
 
-		public override string ToString() => FirstPart.LevelString();
-		public IEnumerable<string> GetLevel(int level) => FirstPart.GetLevel(level);
+		//public void Extend(FormattedString pre, CommandPart p) {
+		//	var parts = pre.Sections;
+		//	if (parts[0].ToString() == FirstPart.ThisPart.ToString())
+		//		FirstPart.Extend(parts.Skip(1).Select(o => (FormattedString)o).ToArray(), p);
+		//}
+
+		#region Methods
+
+		public IEnumerable<FormattedString> GetLevel(int level) => FirstPart.GetLevel(level);
+
+		public override string ToString() => FirstPart.LevelString().ToString();
+
+		#endregion Methods
 	}
 }

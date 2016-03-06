@@ -1,11 +1,20 @@
 ﻿using System;
 
 namespace TheCloset.ConsoleHelpers {
-	internal struct FormattedText {
+
+	public struct FormattedText {
+
+		#region Fields
+
 		public ConsoleColor? BackgroundColor;
 		public ConsoleColor? ForegroundColor;
 		public bool Reset;
 		public string Text;
+
+		#endregion Fields
+
+
+		#region Constructors
 
 		public FormattedText(string text, ConsoleColor? fcolor = null, ConsoleColor? bcolor = null, bool reset = false) {
 			Text = text;
@@ -13,6 +22,15 @@ namespace TheCloset.ConsoleHelpers {
 			BackgroundColor = bcolor;
 			Reset = reset;
 		}
+
+		#endregion Constructors
+
+
+		#region Methods
+
+		public static explicit operator string(FormattedText s) => s.Text;
+
+		public static implicit operator FormattedText(string s) => new FormattedText(s, reset: true);
 
 		public void SetColors() {
 			if (Reset)
@@ -25,11 +43,13 @@ namespace TheCloset.ConsoleHelpers {
 			}
 		}
 
-		public static implicit operator FormattedText(string s) => new FormattedText(s, reset: true);
-		public static explicit operator string(FormattedText s) => s.Text;
+		public override string ToString() => Text;
 
-		public override string ToString() {
-			return $"{(Reset ? "R" : ($"{ForegroundColor?.ToString() ?? "X"}/{BackgroundColor?.ToString() ?? "X"}"))}\"{Text}\"";
+		public void Write() {
+			SetColors();
+			Console.Write(Text);
 		}
+
+		#endregion Methods
 	}
 }

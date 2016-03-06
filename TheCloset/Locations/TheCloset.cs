@@ -1,13 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TheCloset.ConsoleHelpers;
 using TheCloset.GenericProps;
 using TheCloset.Locations.InTheCloset;
 using TheCloset.TextAdventure;
 
 namespace TheCloset.Locations {
+
 	internal class TheCloset : Location {
+
+		#region Fields
+
 		private readonly Verb _walkVerb;
+
+		public Door DoorToHallway { get; }
+
+		#endregion Fields
+
+		#region Constructors
 
 		public TheCloset() {
 			Instance = this;
@@ -16,138 +27,252 @@ namespace TheCloset.Locations {
 			Props.Add(new BlindFold(this));
 			Props.Add(new Rope(this));
 			Props.Add(new Box(this));
-			Props.Add(new Door(this, Hallway.Instance, "door to the hallway", 2, 3, lockMsg: "There is no handle.") {
+			DoorToHallway = new Door(this, Hallway.Instance, "the door to the hallway", 2, 3, lockMsg: "There is no handle.") {
 				Locked = true
-			});
+			};
+			DoorToHallway.DoorUsed += door => { if (!door.Locked) Player.Instance.ChangeLocation(Hallway.Instance); };
+			Props.Add(DoorToHallway);
 
 			Player.Instance.PlayerMoved += PlayerMoved;
-			_walkVerb = new Verb("Walk to the", GetDistantPropNames, WalkToThe) {Enabled = Props.Except(AdjacentProps).Any()};
+			_walkVerb = new Verb("Walk to", GetDistantPropNames, WalkToThe) { Enabled = Props.Except(AdjacentProps).Any() };
 			InternalVerbs.Add(_walkVerb);
 
-			InternalVerbs.Add(new Verb("Look around", s => {
+			InternalVerbs.Add(new Verb("Look around", s =>
+			{
 				var props = AdjacentProps.Select(o => o.Name).ToArray();
 				var near =
 					Props.Where(o => Math.Abs(Player.Instance.X - o.X) <= 3 && Math.Abs(Player.Instance.Y - o.Y) <= 3)
 						.Except(AdjacentProps)
 						.Select(o => o.Name)
 						.ToArray();
-				if (props.Length > 0)
-					Game.Instace.OutputPane.Write(
-						$"You are next to {(props.Length == 1 ? "" : string.Join(", ", props.WithoutLast().Select(o => $"the {o}")) + " and ")}the {props.Last()}. ");
-				if (near.Length > 0)
-					Game.Instace.OutputPane.Write(
-						$"Not far away is {(near.Length == 1 ? "" : string.Join(", ", near.WithoutLast().Select(o => $"the {o}")) + " and ")}the {near.Last()}. ");
+				if (props.Length > 0) {
+					Game.Instace.OutputPane.Write("You are next to ");
+					if (props.Length == 1)
+						Game.Instace.OutputPane.Write(props.First() + ". ");
+					else {
+						Game.Instace.OutputPane.Write(FormattedString.Join(", ", props.WithoutLast()));
+						Game.Instace.OutputPane.Write(new FormattedString(", and ") + props.Last() + ". ");
+					}
+				}
+				if (near.Length > 0) {
+					Game.Instace.OutputPane.Write("Not far away is ");
+					if (props.Length == 1)
+						Game.Instace.OutputPane.Write(near.First() + ". ");
+					else {
+						Game.Instace.OutputPane.Write(FormattedString.Join(", ", near.WithoutLast()));
+						Game.Instace.OutputPane.Write(new FormattedString(", and ") + near.Last() + ". ");
+					}
+				}
 			}));
 		}
 
+		#endregion Constructors
+
+		#region Properties
+
 		public static TheCloset Instance { get; private set; }
 
-		private IEnumerable<CommandPart> GetDistantPropNames()
-			=> Props.Except(AdjacentProps).Select(o => new CommandPart(o.Name));
+		#endregion Properties
+
+		#region Methods
+
+		private IEnumerable<CommandPart> GetDistantPropNames() =>
+			Props.Except(AdjacentProps).Select(o => new CommandPart(o.Name));
+
+		private void PlayerMoved() =>
+			_walkVerb.Enabled = Props.Except(AdjacentProps).Any();
 
 		private void WalkToThe(string s) {
-			var p = Props.First(o => s.EndsWith(o.Name, StringComparison.InvariantCultureIgnoreCase));
+			var p = Props.First(o => s.EndsWith(o.Name.ToString(), StringComparison.InvariantCultureIgnoreCase));
 			Player.Instance.SetPosition(p.X, p.Y);
-			Game.Instace.OutputPane.Write($"You walk to the {p.Name}");
+			Game.Instace.OutputPane.Write(new FormattedString("You walk to ") + p.Name);
 		}
 
-		private void PlayerMoved() => _walkVerb.Enabled = Props.Except(AdjacentProps).Any();
+		#endregion Methods
 
-		#region Props
+		#region Classes
 
 		private class BlindFold : Prop {
-			public BlindFold(Location parent) : base(parent, "Blindfold", 0, 0) {
-				InternalVerbs.Add(new Verb("Pick up the Blindfold", s => {
+
+			#region Constructors
+
+			public BlindFold(Location parent) : base(parent, "the Blindfold".Cyan(), 0, 0) {
+				InternalVerbs.Add(new Verb(new FormattedString("Pick up the ", "Blindfold".Cyan()), s =>
+				{
 					Parent.Props.Remove(this);
 					Player.Instance.AddItem(new BlindFoldItem());
 				}));
 			}
 
+			#endregion Constructors
+
+			#region Classes
+
 			private class BlindFoldItem : Item {
+
+				#region Fields
+
 				private readonly Verb _putOnVerb;
 
+				#endregion Fields
+
+				#region Constructors
+
 				public BlindFoldItem() : base("Blindfold") {
-					_putOnVerb = new Verb("Put on the blindfold", s => {
+					_putOnVerb = new Verb(new FormattedString("Put on the ", "Blindfold".Cyan()), s =>
+					{
 						Game.Instace.OutputPane.Write("No, that would be silly...");
 						_putOnVerb.Enabled = false;
 					});
 					InnerVerbs.Add(_putOnVerb);
 				}
+
+				#endregion Constructors
 			}
+
+			#endregion Classes
+		}
+
+		private class Box : Prop {
+
+			#region Fields
+
+			private readonly OnTheBox _onTheBox;
+
+			#endregion Fields
+
+			#region Constructors
+
+			public Box(TheCloset parent) : base(parent, "the box", 3, 2) {
+				_onTheBox = new OnTheBox(parent);
+				InternalVerbs.Add(new Verb(new FormattedString("Climb the ", "box".Magenta()), s =>
+				{
+					Game.Instace.OutputPane.Write(new FormattedString("You can just barely reach a ", "ceiling vent".Magenta(), "."));
+					Player.Instance.ChangeLocation(_onTheBox);
+				}));
+			}
+
+			#endregion Constructors
 		}
 
 		private class Rope : Prop {
-			public Rope(Location parent) : base(parent, "Rope", 0, 0) {
-				InternalVerbs.Add(new Verb("Pick up the Rope", s => {
+
+			#region Constructors
+
+			public Rope(Location parent) : base(parent, "the Rope".Cyan(), 0, 0) {
+				InternalVerbs.Add(new Verb(new FormattedString("Pick up the ", "Rope".Cyan()), s =>
+				{
 					Parent.Props.Remove(this);
 					Player.Instance.AddItem(new RopeItem());
 				}));
 			}
 
+			#endregion Constructors
+
+			#region Classes
+
 			private class RopeItem : Item {
-				public RopeItem() : base("Frayed Rope") {}
+
+				#region Constructors
+
+				public RopeItem() : base("Longish Rope") {
+				}
+
+				#endregion Constructors
 			}
+
+			#endregion Classes
 		}
 
 		private class Shelf : Prop {
-			private readonly bool _hasBook = true;
+
+			#region Fields
+
+			private bool _hasBook = true;
 			private readonly Verb _pickUpBookVerb;
 
-			public Shelf(Location parent) : base(parent, "shelf", 2, 0) {
-				_pickUpBookVerb = new Verb("Pick up the Notebook", s => {
+			#endregion Fields
+
+			#region Constructors
+
+			public Shelf(Location parent) : base(parent, "the shelf", 2, 0) {
+				_pickUpBookVerb = new Verb(new FormattedString("Pick up the ", "Notebook".Cyan()), s =>
+				{
+					_hasBook = false;
 					InternalVerbs.Remove(_pickUpBookVerb);
 					Player.Instance.AddItem(new NotebookItem());
 				});
-				InternalVerbs.Add(new Verb("Inspect the shelf", s => {
-					Game.Instace.OutputPane.Write("There is a book on the shelf.");
+				InternalVerbs.Add(new Verb(new FormattedString("Inspect ", "the shelf".Magenta()), s =>
+				{
+					Game.Instace.OutputPane.Write(new FormattedString("There is a ", "Notebook".Cyan(), " on the ", "shelf.".Magenta()));
 					if (_hasBook)
 						InternalVerbs.Add(_pickUpBookVerb);
 				}));
 			}
 
+			#endregion Constructors
+
+			#region Classes
+
 			private class NotebookItem : Item {
+
+				#region Constructors
+
 				public NotebookItem() : base("Notebook") {
-					InnerVerbs.Add(new Verb("Inspect the notebook",
+					InnerVerbs.Add(new Verb(new FormattedString("Inspect the ", "Notebook".Cyan()),
 						s => Game.Instace.OutputPane.Write("It was written by 'Ricky'. It is full of sorrowful notes.")));
 				}
+
+				#endregion Constructors
 			}
+
+			#endregion Classes
 		}
 
 		private class Toolbox : Prop {
+
+			#region Fields
+
 			private readonly Verb _getScrewdriverVerb;
 			private bool _hasScrewdriver = true;
 
-			public Toolbox(Location parent) : base(parent, "toolbox", 0, 2) {
-				_getScrewdriverVerb = new Verb("Pick up the screwdriver", s => {
+			#endregion Fields
+
+			#region Constructors
+
+			public Toolbox(Location parent) : base(parent, "the toolbox", 0, 2) {
+				_getScrewdriverVerb = new Verb(new FormattedString("Pick up the ", "Screwdriver".Cyan()), s =>
+				{
 					Game.Instace.OutputPane.Write("You stash it in your inventory");
 					Player.Instance.AddItem(new ScrewDriver());
 					_getScrewdriverVerb.Enabled = false;
 					_hasScrewdriver = false;
-				}) {Enabled = false};
-				InternalVerbs.Add(new Verb("Inspect the toolbox", s => {
-					Game.Instace.OutputPane.Write(_hasScrewdriver ? "There is a screwdriver." : "It is empty.");
+				}) { Enabled = false };
+				InternalVerbs.Add(new Verb(new FormattedString("Inspect ", "the toolbox".Magenta()), s =>
+				{
+					Game.Instace.OutputPane.Write(_hasScrewdriver ? new FormattedString("There is a ", "Screwdriver".Cyan(), ".") : "It is empty.");
 					_getScrewdriverVerb.Enabled = _hasScrewdriver;
 				}));
 				InternalVerbs.Add(_getScrewdriverVerb);
 			}
 
+			#endregion Constructors
+
+			#region Classes
+
 			private class ScrewDriver : Item {
-				public ScrewDriver() : base("Screwdriver") {}
+
+				#region Constructors
+
+				public ScrewDriver() : base("Screwdriver") {
+				}
+
+				#endregion Constructors
 			}
+
+			#endregion Classes
 		}
 
-		private class Box : Prop {
-			private readonly OnTheBox _onTheBox;
-
-			public Box(TheCloset parent) : base(parent, "box", 3, 2) {
-				_onTheBox = new OnTheBox(parent);
-				InternalVerbs.Add(new Verb("Climb the box", s => {
-					Game.Instace.OutputPane.Write("You can just barely reach a ceiling vent.");
-					Player.Instance.ChangeLocation(_onTheBox);
-				}));
-			}
-		}
-
-		#endregion
+		#endregion Classes
 	}
 }

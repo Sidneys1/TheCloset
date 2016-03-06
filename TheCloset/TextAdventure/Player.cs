@@ -3,19 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace TheCloset.TextAdventure {
+
 	public class Player : IVerbable {
-		public Player() {
-			Instance = this;
-		}
+
+
+		#region Properties
 
 		public static Player Instance { get; private set; }
+
 		public Location CurrentLocation { get; private set; }
+
 		public Dictionary<string, string> GlobalVars { get; } = new Dictionary<string, string>();
 
-		public IEnumerable<Verb> Verbs {
-			get {
-				//				foreach (var internalVerb in _internalVerbs)
-				//					yield return internalVerb;
+		public IEnumerable<Verb> Verbs
+		{
+			get
+			{
 				foreach (var verb in CurrentLocation.Verbs)
 					yield return verb;
 				foreach (var verb in Items.SelectMany(o => o.Verbs))
@@ -23,17 +26,36 @@ namespace TheCloset.TextAdventure {
 			}
 		}
 
-		public event Action PlayerMoved;
+		#endregion Properties
+
+
+		#region Events
+
 		public event Action LocationChanged;
+
+		public event Action PlayerMoved;
+
+		#endregion Events
+
+
+		#region Constructors
+
+		public Player() {
+			Instance = this;
+		}
+
+		#endregion Constructors
+
+
+		#region Methods
 
 		public void ChangeLocation(Location l) {
 			CurrentLocation = l;
 			LocationChanged?.Invoke();
-		}
-
-		public void Start() {
 			PlayerMoved?.Invoke();
 		}
+
+		#endregion Methods
 
 		#region Items
 
@@ -42,7 +64,7 @@ namespace TheCloset.TextAdventure {
 
 		public void AddItem(Item i) => _items.Add(i);
 
-		#endregion
+		#endregion Items
 
 		#region Position
 
@@ -56,6 +78,6 @@ namespace TheCloset.TextAdventure {
 			PlayerMoved?.Invoke();
 		}
 
-		#endregion
+		#endregion Position
 	}
 }
