@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TheCloset.ConsoleHelpers;
 using TheCloset.GenericProps;
-using TheCloset.Locations.InTheCloset;
+using TheCloset.Locations.OfficeBuilding.InTheCloset;
 using TheCloset.TextAdventure;
 
-namespace TheCloset.Locations {
+namespace TheCloset.Locations.OfficeBuilding {
 
 	internal class TheCloset : Location {
 
@@ -27,9 +27,7 @@ namespace TheCloset.Locations {
 			Props.Add(new BlindFold(this));
 			Props.Add(new Rope(this));
 			Props.Add(new Box(this));
-			DoorToHallway = new Door(this, Hallway.Instance, "the door to the hallway", 2, 3, lockMsg: "There is no handle.") {
-				Locked = true
-			};
+			DoorToHallway = new Door(this, Hallway.Instance, "the door", 2, 3, lockMsg: "There is no handle.") { Locked = true };
 			DoorToHallway.DoorUsed += door => { if (!door.Locked) Player.Instance.ChangeLocation(Hallway.Instance); };
 			Props.Add(DoorToHallway);
 
@@ -54,14 +52,13 @@ namespace TheCloset.Locations {
 						Game.Instace.OutputPane.Write(new FormattedString(", and ") + props.Last() + ". ");
 					}
 				}
-				if (near.Length > 0) {
-					Game.Instace.OutputPane.Write("Not far away is ");
-					if (props.Length == 1)
-						Game.Instace.OutputPane.Write(near.First() + ". ");
-					else {
-						Game.Instace.OutputPane.Write(FormattedString.Join(", ", near.WithoutLast()));
-						Game.Instace.OutputPane.Write(new FormattedString(", and ") + near.Last() + ". ");
-					}
+				if (near.Length <= 0) return;
+				Game.Instace.OutputPane.Write("Not far away is ");
+				if (props.Length == 1)
+					Game.Instace.OutputPane.Write(near.First() + ". ");
+				else {
+					Game.Instace.OutputPane.Write(FormattedString.Join(", ", near.WithoutLast()));
+					Game.Instace.OutputPane.Write(new FormattedString(", and ") + near.Last() + ". ");
 				}
 			}));
 		}
@@ -201,12 +198,20 @@ namespace TheCloset.Locations {
 					_hasBook = false;
 					InternalVerbs.Remove(_pickUpBookVerb);
 					Player.Instance.AddItem(new NotebookItem());
-				});
+				}) { Enabled = false };
+
+				InternalVerbs.Add(_pickUpBookVerb);
+
 				InternalVerbs.Add(new Verb(new FormattedString("Inspect ", "the shelf".Magenta()), s =>
 				{
+					
+					if (!_hasBook) {
+						Game.Instace.OutputPane.Write("There is nothing here.");
+						return;
+					}
 					Game.Instace.OutputPane.Write(new FormattedString("There is a ", "Notebook".Cyan(), " on the ", "shelf.".Magenta()));
-					if (_hasBook)
-						InternalVerbs.Add(_pickUpBookVerb);
+
+					_pickUpBookVerb.Enabled = true;
 				}));
 			}
 
@@ -216,11 +221,17 @@ namespace TheCloset.Locations {
 
 			private class NotebookItem : Item {
 
+				private readonly Verb _inspectVerb;
+
 				#region Constructors
 
 				public NotebookItem() : base("Notebook") {
-					InnerVerbs.Add(new Verb(new FormattedString("Inspect the ", "Notebook".Cyan()),
-						s => Game.Instace.OutputPane.Write("It was written by 'Ricky'. It is full of sorrowful notes.")));
+					_inspectVerb = new Verb(new FormattedString("Inspect the ", "Notebook".Cyan()),
+						s => {
+							Game.Instace.OutputPane.Write("It was written by 'Ricky'. It is full of sorrowful notes.");
+							InnerVerbs.Remove(_inspectVerb);
+						});
+					InnerVerbs.Add(_inspectVerb);
 				}
 
 				#endregion Constructors

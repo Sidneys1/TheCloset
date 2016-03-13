@@ -1,33 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using TheCloset.ConsoleHelpers;
-using TheCloset.Locations.InTheCloset;
 using TheCloset.TextAdventure;
 
 namespace TheCloset {
 
 	internal class Game {
-
 		#region Fields
 
 		public readonly ScrollingPane OutputPane;
 		private const int INV_WIDTH = 35;
 		private readonly SwitchPane _optionsPane;
 		private int _cusorLine;
+		public static readonly Random Random = new Random();
+		public List<string> CommandHistory { get; }=new List<string>();
+		public int CommandHistoryIndex = 0;
 
 		#endregion Fields
-
-
+		
 		#region Constructors
 
 		public Game() {
-			Console.SetWindowSize(200, 50);
-			Console.SetBufferSize(200, 50);
-
 			Instace = this;
-			OutputPane = new ScrollingPane(0, 0, Console.BufferWidth - INV_WIDTH, Console.BufferHeight - 3);
+			OutputPane = new ScrollingPane(0, 4, Console.BufferWidth - (INV_WIDTH + 1), Console.BufferHeight - 7);
 			_optionsPane = new SwitchPane(0, 48, Console.BufferWidth);
 		}
 
@@ -50,10 +49,11 @@ namespace TheCloset {
 
 		#region Methods
 
-		public static string ReadMyLine(Action<string> printStr, Func<string, string> tabcallback) {
+		public string ReadMyLine(Action<string> printStr, Func<string, string> tabcallback) {
 			var buf = "";
 			while (true) {
 				var k = Console.ReadKey(true);
+				
 				switch (k.Key) {
 					case ConsoleKey.Tab:
 						if (buf.Length == Console.BufferWidth - 1) break;
@@ -83,7 +83,22 @@ namespace TheCloset {
 						Console.CursorLeft--;
 						printStr(buf);
 						break;
-
+					case ConsoleKey.UpArrow:
+						if (CommandHistoryIndex == CommandHistory.Count)
+							break;
+						ExtendedConsole.ClearCurrentConsoleLine();
+						Console.CursorLeft = 0;
+						buf = CommandHistory[CommandHistory.Count - ++CommandHistoryIndex];
+						printStr(buf);
+						break;
+					case ConsoleKey.DownArrow:
+						if (CommandHistoryIndex == 0)
+							break;
+						ExtendedConsole.ClearCurrentConsoleLine();
+						Console.CursorLeft = 0;
+						buf = --CommandHistoryIndex == 0 ? "" : CommandHistory[CommandHistory.Count - CommandHistoryIndex];
+						printStr(buf);
+						break;
 					default:
 						if (buf.Length == Console.BufferWidth - 1) break;
 						if (char.IsLetterOrDigit(k.KeyChar) || char.IsPunctuation(k.KeyChar) || char.IsWhiteSpace(k.KeyChar) ||
@@ -165,7 +180,7 @@ namespace TheCloset {
 		}
 
 		public void Run() {
-			Player.ChangeLocation(new DarkPlace());
+			Player.ChangeLocation(new Locations.OfficeBuilding.Hallway());
 
 			PrintHeader();
 
@@ -185,7 +200,7 @@ namespace TheCloset {
 				ExtendedConsole.ClearConsoleLine(49);
 				Console.SetCursorPosition(0, 49);
 				var str = ReadMyLine(PrintStr, Tabcallback).Trim();
-
+				
 				var match = Player.CurrentLocation.Verbs.FirstOrDefault(
 					o => o.FirstPart.Permute().Any(x => x.ToString().Equals(str, StringComparison.InvariantCultureIgnoreCase)))
 							??
@@ -193,6 +208,9 @@ namespace TheCloset {
 								o => o.FirstPart.Permute().Any(x => x.ToString().Equals(str, StringComparison.InvariantCultureIgnoreCase)));
 
 				if (match?.Action != null) {
+					if (!CommandHistory.LastOrDefault()?.Equals(str, StringComparison.InvariantCultureIgnoreCase) ?? true)
+						CommandHistory.Add(str);
+					
 					if (_cusorLine != Console.BufferHeight - 4)
 						_cusorLine++;
 					OutputPane.WriteLine();
@@ -202,6 +220,7 @@ namespace TheCloset {
 					ExtendedConsole.ClearConsoleLine(48);
 					"\rCould not find that command...".Red(true).Write();
 				}
+				CommandHistoryIndex = 0;
 			} while (true);
 		}
 
@@ -219,11 +238,15 @@ namespace TheCloset {
 		}
 
 		private void PrintHeader() {
-			var margin = new string(' ', (OutputPane.Width / 2) - 20);
-			OutputPane.WriteLine((margin + @"   ____       _              ").Yellow());
-			OutputPane.WriteLine((margin + @"    /  / _   /  /   _ _ _/   ").Yellow());
-			OutputPane.WriteLine((margin + @"   /  /)(-  (_ /()_) (- /    ").Yellow());
-			OutputPane.WriteLine((margin + "You wake up. Your head hurts..").White(true));
+			var margin = new string(' ', (OutputPane.Width / 2) - 15);
+			(margin + @"   ____       _              ").Yellow().Write();
+			Console.WriteLine();
+			(margin + @"    /  / _   /  /   _ _ _/   ").Yellow().Write();
+			Console.WriteLine();
+			(margin + @"   /  /)(-  (_ /()_) (- /    ").Yellow().Write();
+			Console.WriteLine();
+			(margin + "You wake up. Your head hurts..").White(true).Write();
+
 			OutputPane.WriteLine(new FormattedString((margin + "  You decide to press ").White(true), "[TAB]".DarkGray(true).DarkGrayBack()));
 			OutputPane.WriteLine();
 		}

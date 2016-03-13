@@ -3,7 +3,7 @@ using System.Linq;
 using TheCloset.ConsoleHelpers;
 using TheCloset.TextAdventure;
 
-namespace TheCloset.Locations.InTheCloset {
+namespace TheCloset.Locations.OfficeBuilding.InTheCloset {
 
 	internal class OnTheBox : Location {
 

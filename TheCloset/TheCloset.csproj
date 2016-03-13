@@ -52,11 +52,13 @@
     <Compile Include="Game.cs" />
     <Compile Include="GenericProps\Door.cs" />
     <Compile Include="Locations\Exit.cs" />
-    <Compile Include="Locations\Hallway.cs" />
-    <Compile Include="Locations\InTheCloset\DarkPlace.cs" />
-    <Compile Include="Locations\InTheCloset\OnTheBox.cs" />
-    <Compile Include="Locations\OfficeSupplyCloset.cs" />
-    <Compile Include="Locations\TheVents.cs" />
+    <Compile Include="Locations\OfficeBuilding\Generic\Office.cs" />
+    <Compile Include="Locations\OfficeBuilding\Hallway.cs" />
+    <Compile Include="Locations\OfficeBuilding\InTheCloset\DarkPlace.cs" />
+    <Compile Include="Locations\OfficeBuilding\InTheCloset\OnTheBox.cs" />
+    <Compile Include="Locations\OfficeBuilding\OfficeSupplyCloset.cs" />
+    <Compile Include="Locations\OfficeBuilding\TheCloset.cs" />
+    <Compile Include="Locations\OfficeBuilding\TheVents.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TextAdventure\CommandPart.cs" />
@@ -66,7 +68,6 @@
     <Compile Include="TextAdventure\Player.cs" />
     <Compile Include="TextAdventure\Prop.cs" />
     <Compile Include="TextAdventure\Verb.cs" />
-    <Compile Include="Locations\TheCloset.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

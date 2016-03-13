@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TheCloset.ConsoleHelpers;
-using TheCloset.Locations.InTheCloset;
+using TheCloset.Locations.OfficeBuilding.InTheCloset;
 using TheCloset.TextAdventure;
 
-namespace TheCloset.Locations {
+namespace TheCloset.Locations.OfficeBuilding {
 
 	internal class TheVents : Location {
 

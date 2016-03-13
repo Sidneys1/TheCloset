@@ -1,7 +1,7 @@
-﻿using TheCloset.ConsoleHelpers;
+using TheCloset.ConsoleHelpers;
 using TheCloset.TextAdventure;
 
-namespace TheCloset.Locations.InTheCloset {
+namespace TheCloset.Locations.OfficeBuilding.InTheCloset {
 
 	internal class DarkPlace : Location {
 

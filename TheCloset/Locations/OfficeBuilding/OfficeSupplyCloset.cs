@@ -1,7 +1,6 @@
-﻿using System.Dynamic;
-using TheCloset.TextAdventure;
+﻿using TheCloset.TextAdventure;
 
-namespace TheCloset.Locations {
+namespace TheCloset.Locations.OfficeBuilding {
 
 	internal class OfficeSupplyCloset : Location {
 		public static OfficeSupplyCloset Instance { get; set; }
