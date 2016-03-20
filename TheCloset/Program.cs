@@ -1,36 +1,44 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using TheCloset.ConsoleHelpers;
+
+// ReSharper disable UnusedMember.Local
 
 namespace TheCloset {
 
 	internal class Program {
 		#region Methods
 
-		private static void Main() {
-			Console.Title = "The Closet";
+		private static void ExtendedConsoleDemo() {
+			Console.CursorVisible = false;
+			short w = (short)Console.BufferWidth;
+			short h = (short)Console.BufferHeight;
 
-			Console.SetWindowSize(100, 25);
-			Console.SetBufferSize(Console.WindowWidth, Console.WindowHeight);
+			var buf = new ExtendedConsole.CharInfo[w * h];
 
-			ExtendedConsole.Init();
-			ExtendedConsole.FixConsoleSize();
+			var rect = new ExtendedConsole.SmallRect { Left = 0, Top = 0, Right = w, Bottom = h };
 
+			var p = ExtendedConsole.Coord.Zero;
+			var s = new ExtendedConsole.Coord(w, h);
+			var chars = Encoding.GetEncoding(437).GetChars(Enumerable.Range(0, byte.MaxValue).Select(i => (byte)i).Except(new byte[] { 8, 9, 10, 7 }).ToArray());
 
-			//ExtendedConsoleMouseDemo();
-			//ExtendedConsoleDemo();
-			//ScrollingPaneDemo();
-			new Game().Run();
-			Console.ReadLine();
+			for (int x = 0; x < 10000; x++) {
+				for (int i = 0; i < buf.Length; ++i) {
+					buf[i].Attributes = (short)((x + i) % 0x80);
+					buf[i].Char.AsciiChar = (byte)chars[(x + i) % chars.Length];
+				}
+
+				ExtendedConsole.UpdateRegion(buf, p, s, ref rect);
+			}
 		}
 
 		private static void ExtendedConsoleMouseDemo() {
+			ExtendedConsole.EnableMouseInput();
+
 			Console.CursorVisible = false;
-			var buf = new ExtendedConsole.INPUT_RECORD[1];
+			var buf = new ExtendedConsole.InputRecord[1];
 			int lx = 0, ly = 0;
 			var myChar = ' ';
 			while (true) {
@@ -67,49 +75,40 @@ namespace TheCloset {
 					Console.WriteLine("Mouse moved");
 					Console.ForegroundColor = ConsoleColor.DarkGray;
 					if ((buf[0].MouseEvent.dwEventFlags & 0x0004) == 0x0004) {
-						var s = (short) (buf[0].MouseEvent.dwButtonState >> 16);
+						var s = (short)(buf[0].MouseEvent.dwButtonState >> 16);
 						Console.WriteLine(s > 0 ? "Mousewheeled up  " : "Mousewheeled down");
-						for (var i = 0; i < Math.Abs(s/120); i++) {
-							var x = (s > 0) ? myChar++ : myChar--;
+						for (var i = 0; i < Math.Abs(s / 120); i++) {
+							if (s > 0) myChar++;
+							else myChar--;
 						}
 						if (myChar < ' ')
 							myChar = ' ';
 						else if (myChar > '~')
 							myChar = '~';
-					}
-					else
+					} else
 						Console.WriteLine();
 					Console.WriteLine($"Char: '{myChar}'");
 				}
 				if ((buf[0].EventType & 0x0001) != 0x0001) continue;
-				Console.Clear();
-				Console.SetCursorPosition(0, 0);
-				Console.Write(buf[0].KeyEvent.UnicodeChar);
+				if (buf[0].KeyEvent.wVirtualKeyCode == (ushort)ConsoleKey.Escape) break;
+				Console.SetCursorPosition(0, 7);
+				Console.Write($"{(ConsoleKey)buf[0].KeyEvent.wVirtualKeyCode}           ");
 			}
 		}
 
-		private static void ExtendedConsoleDemo() {
-			Console.CursorVisible = false;
-			short w = (short)Console.BufferWidth;
-			short h = (short)Console.BufferHeight;
+		private static void Main() {
+			Console.Title = "The Closet";
 
-			var buf = new ExtendedConsole.CharInfo[w * h];
+			Console.SetWindowSize(200, 50);
+			Console.SetBufferSize(Console.WindowWidth, Console.WindowHeight);
 
-			var rect = new ExtendedConsole.SmallRect { Left = 0, Top = 0, Right = w, Bottom = h };
+			ExtendedConsole.FixConsoleSize();
 
-			var p = ExtendedConsole.COORD.Zero;
-			var s = new ExtendedConsole.COORD(w, h);
-			var chars = Encoding.GetEncoding(437).GetChars(Enumerable.Range(0, byte.MaxValue).Select(i => (byte)i).Except(new byte[] { 8, 9, 10, 7 }).ToArray());
-
-			for (int x = 0; x < 10000; x++) {
-				for (int i = 0; i < buf.Length; ++i) {
-					buf[i].Attributes = (short)((x + i) % 0x80);
-					buf[i].Char.AsciiChar = (byte)chars[(x + i) % chars.Length];
-				}
-
-				ExtendedConsole.UpdateRegion(buf, p, s, ref rect);
-			}
-
+			//ExtendedConsoleMouseDemo();
+			//ExtendedConsoleDemo();
+			//ScrollingPaneDemo();
+			new Game().Run();
+			Console.ReadLine();
 		}
 
 		private static void ScrollingPaneDemo() {

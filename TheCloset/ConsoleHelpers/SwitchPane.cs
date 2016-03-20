@@ -5,7 +5,6 @@ using System.Linq;
 namespace TheCloset.ConsoleHelpers {
 
 	internal class SwitchPane {
-
 		#region Properties
 
 		public int Width { get; }
@@ -13,7 +12,6 @@ namespace TheCloset.ConsoleHelpers {
 		public int Y { get; }
 
 		#endregion Properties
-
 
 		#region Constructors
 
@@ -25,7 +23,6 @@ namespace TheCloset.ConsoleHelpers {
 
 		#endregion Constructors
 
-
 		#region Methods
 
 		public void Draw(FormattedString header, FormattedString post, IEnumerable<FormattedString> options) {
@@ -33,7 +30,7 @@ namespace TheCloset.ConsoleHelpers {
 			var space = Width - header.Length;
 			var maxl = space;
 
-			ExtendedConsole.ClearConsoleLine(Y);
+			ExtendedConsole.ClearConsoleLine((short)Y);
 
 			while (opts.Select(o => o.Length + post.Length > maxl ? o.ToString().Substring(0, Math.Min(o.Length, maxl)) + post : o).Distinct().Sum(o => o.Length + 2) - 2 > space) {
 				maxl--;

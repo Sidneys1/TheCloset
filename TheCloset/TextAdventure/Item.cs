@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using TheCloset.ConsoleHelpers;
 using LiquidAmounts = System.Collections.Generic.Dictionary<string, float>;
@@ -10,13 +9,11 @@ using ReadOnlyLiquidUnits = System.Collections.Generic.IReadOnlyDictionary<strin
 namespace TheCloset.TextAdventure {
 
 	public abstract class Item : IVerbable {
-
 		#region Fields
 
 		protected readonly List<Verb> InnerVerbs = new List<Verb>();
 
 		#endregion Fields
-
 
 		#region Properties
 
@@ -25,7 +22,6 @@ namespace TheCloset.TextAdventure {
 		public IEnumerable<Verb> Verbs => InnerVerbs;
 
 		#endregion Properties
-
 
 		#region Constructors
 
@@ -41,31 +37,25 @@ namespace TheCloset.TextAdventure {
 	}
 
 	public abstract class LiquidContainerItem : Item {
-
 		#region Properties
 
-		public ReadOnlyLiquidAmounts LiquidMax => InternalLiquidStorage;
+		public ReadOnlyLiquidAmounts LiquidMax => InternalLiquidMax;
 
-		public ReadOnlyLiquidAmounts LiquidStorage => InternalLiquidStorage;
-
+		public LiquidAmounts LiquidStorage { get; } = new LiquidAmounts();
 		public IReadOnlyList<string> LiquidTypes => InternalLiquidTypes;
 
 		public ReadOnlyLiquidUnits LiquidUnits => InternalLiquidUnits;
 
-		public float TotalAmount => InternalLiquidStorage.Sum(o => o.Value);
+		public float TotalAmount => LiquidStorage.Sum(o => o.Value);
 
 		public float TotalMax => InternalLiquidMax.Sum(o => o.Value);
 
 		protected LiquidAmounts InternalLiquidMax { get; } = new LiquidAmounts();
-
-		protected LiquidAmounts InternalLiquidStorage { get; } = new LiquidAmounts();
-
 		protected List<string> InternalLiquidTypes { get; } = new List<string>();
 
 		protected LiquidUnits InternalLiquidUnits { get; } = new LiquidUnits();
 
 		#endregion Properties
-
 
 		#region Constructors
 
@@ -79,25 +69,26 @@ namespace TheCloset.TextAdventure {
 
 		#endregion Constructors
 
-
 		#region Methods
+
+		public void AddLiquid(LiquidDef liquidType) {
+			InternalLiquidTypes.Add(liquidType.LiquidType);
+			LiquidStorage[liquidType.LiquidType] = 0;
+			InternalLiquidMax[liquidType.LiquidType] = liquidType.Max;
+			InternalLiquidUnits[liquidType.LiquidType] = liquidType.Unit;
+		}
 
 		private void Init(IEnumerable<LiquidDef> liquidTypes) {
 			foreach (var liquidType in liquidTypes) {
-				InternalLiquidTypes.Add(liquidType.LiquidType);
-				InternalLiquidStorage[liquidType.LiquidType] = 0;
-				InternalLiquidMax[liquidType.LiquidType] = liquidType.Max;
-				InternalLiquidUnits[liquidType.LiquidType] = liquidType.Unit;
+				AddLiquid(liquidType);
 			}
 		}
 
 		#endregion Methods
 
-
 		#region Structs
 
 		public struct LiquidDef {
-
 			#region Fields
 
 			public string LiquidType;
@@ -107,7 +98,6 @@ namespace TheCloset.TextAdventure {
 			public string Unit;
 
 			#endregion Fields
-
 
 			#region Constructors
 

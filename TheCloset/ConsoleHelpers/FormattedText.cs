@@ -3,7 +3,6 @@
 namespace TheCloset.ConsoleHelpers {
 
 	public struct FormattedText {
-
 		#region Fields
 
 		public ConsoleColor? BackgroundColor;
@@ -12,7 +11,6 @@ namespace TheCloset.ConsoleHelpers {
 		public string Text;
 
 		#endregion Fields
-
 
 		#region Constructors
 
@@ -24,7 +22,6 @@ namespace TheCloset.ConsoleHelpers {
 		}
 
 		#endregion Constructors
-
 
 		#region Methods
 

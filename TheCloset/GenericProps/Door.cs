@@ -3,8 +3,8 @@ using TheCloset.ConsoleHelpers;
 using TheCloset.TextAdventure;
 
 namespace TheCloset.GenericProps {
-	public class Door : Prop {
 
+	public class Door : Prop {
 		#region Fields
 
 		public readonly Location To;
@@ -12,14 +12,17 @@ namespace TheCloset.GenericProps {
 
 		#endregion Fields
 
-		public event Action<Door> DoorUsed;
-
 		#region Properties
 
 		public bool Locked { get; set; } = false;
 
 		#endregion Properties
 
+		#region Events
+
+		public event Action<Door> DoorUsed;
+
+		#endregion Events
 
 		#region Constructors
 
@@ -40,7 +43,6 @@ namespace TheCloset.GenericProps {
 		}
 
 		#endregion Constructors
-
 
 		#region Methods
 

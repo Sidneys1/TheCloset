@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
 using TheCloset.ConsoleHelpers;
 using TheCloset.TextAdventure;
 
@@ -12,30 +10,18 @@ namespace TheCloset {
 	internal class Game {
 		#region Fields
 
+		public static readonly Random Random = new Random();
 		public readonly ScrollingPane OutputPane;
+		public int CommandHistoryIndex;
 		private const int INV_WIDTH = 35;
 		private readonly SwitchPane _optionsPane;
-		private int _cusorLine;
-		public static readonly Random Random = new Random();
-		public List<string> CommandHistory { get; }=new List<string>();
-		public int CommandHistoryIndex = 0;
 
 		#endregion Fields
-		
-		#region Constructors
-
-		public Game() {
-			Instace = this;
-			OutputPane = new ScrollingPane(0, 4, Console.BufferWidth - (INV_WIDTH + 1), Console.BufferHeight - 7);
-			_optionsPane = new SwitchPane(0, 48, Console.BufferWidth);
-		}
-
-		#endregion Constructors
-
 
 		#region Properties
 
 		public static Game Instace { get; private set; }
+		public List<string> CommandHistory { get; } = new List<string>();
 
 		public Player Player { get; } = new Player {
 			GlobalVars = {
@@ -46,69 +32,30 @@ namespace TheCloset {
 
 		#endregion Properties
 
+		#region Constructors
+
+		public Game() {
+			Instace = this;
+			OutputPane = new ScrollingPane(0, 4, Console.BufferWidth - (INV_WIDTH + 1), Console.BufferHeight - 7);
+			_optionsPane = new SwitchPane(0, 48, Console.BufferWidth);
+		}
+
+		#endregion Constructors
 
 		#region Methods
 
-		public string ReadMyLine(Action<string> printStr, Func<string, string> tabcallback) {
-			var buf = "";
-			while (true) {
-				var k = Console.ReadKey(true);
-				
-				switch (k.Key) {
-					case ConsoleKey.Tab:
-						if (buf.Length == Console.BufferWidth - 1) break;
-						var ret = tabcallback(buf);
-						if (ret == null) break;
-						if (!ret.Equals(buf)) {
-							ExtendedConsole.ClearCurrentConsoleLine();
-							buf = ret;
-							printStr(buf);
-						}
-						break;
-
-					case ConsoleKey.Enter:
-						return buf;
-
-					case ConsoleKey.Escape:
-						buf = string.Empty;
-						ExtendedConsole.ClearCurrentConsoleLine();
-						Console.SetCursorPosition(0, Console.CursorTop);
-						break;
-
-					case ConsoleKey.Backspace:
-						if (buf.Length == 0) break;
-						buf = buf.Substring(0, buf.Length - 1);
-						Console.CursorLeft--;
-						Console.Write(' ');
-						Console.CursorLeft--;
-						printStr(buf);
-						break;
-					case ConsoleKey.UpArrow:
-						if (CommandHistoryIndex == CommandHistory.Count)
-							break;
-						ExtendedConsole.ClearCurrentConsoleLine();
-						Console.CursorLeft = 0;
-						buf = CommandHistory[CommandHistory.Count - ++CommandHistoryIndex];
-						printStr(buf);
-						break;
-					case ConsoleKey.DownArrow:
-						if (CommandHistoryIndex == 0)
-							break;
-						ExtendedConsole.ClearCurrentConsoleLine();
-						Console.CursorLeft = 0;
-						buf = --CommandHistoryIndex == 0 ? "" : CommandHistory[CommandHistory.Count - CommandHistoryIndex];
-						printStr(buf);
-						break;
-					default:
-						if (buf.Length == Console.BufferWidth - 1) break;
-						if (char.IsLetterOrDigit(k.KeyChar) || char.IsPunctuation(k.KeyChar) || char.IsWhiteSpace(k.KeyChar) ||
-							char.IsSymbol(k.KeyChar)) {
-							buf += k.KeyChar;
-							printStr(buf);
-						}
-						break;
-				}
+		public static void PrintUserInterface() {
+			Console.SetCursorPosition(0, 47);
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.Write(new string('═', Console.BufferWidth - INV_WIDTH));
+			Console.Write('╩');
+			Console.Write(new string('═', INV_WIDTH - 1));
+			for (var i = 0; i < Console.BufferHeight - 3; i++) {
+				Console.SetCursorPosition(Console.BufferWidth - INV_WIDTH, i);
+				Console.Write('║');
 			}
+			Console.SetCursorPosition(Console.BufferWidth - ((INV_WIDTH / 2) + 5), 0);
+			"Inventory".White(true).Write();
 		}
 
 		public string PrintLevel(string entry) {
@@ -171,7 +118,7 @@ namespace TheCloset {
 			Console.SetCursorPosition(0, Console.CursorTop);
 			var pre = Console.ForegroundColor;
 			var match = Player.Verbs.SelectMany(o => o.FirstPart.PermuteCommands()).FirstOrDefault(o => o.ToString().Equals(buf.Trim(), StringComparison.InvariantCultureIgnoreCase));
-			
+
 			if (match != null)
 				match.LevelString().Write();
 			else
@@ -179,62 +126,138 @@ namespace TheCloset {
 			Console.ForegroundColor = pre;
 		}
 
+		public string ReadMyLine(Action<string> printStr, Func<string, string> tabcallback) {
+			var buf = "";
+			while (true) {
+				var k = Console.ReadKey(true);
+
+				switch (k.Key) {
+					case ConsoleKey.Tab:
+						if (buf.Length == Console.BufferWidth - 1) break;
+						var ret = tabcallback(buf);
+						if (ret == null) break;
+						if (!ret.Equals(buf)) {
+							ExtendedConsole.ClearCurrentConsoleLine();
+							buf = ret;
+							printStr(buf);
+						}
+						break;
+
+					case ConsoleKey.Enter:
+						return buf;
+
+					case ConsoleKey.Escape:
+						buf = string.Empty;
+						ExtendedConsole.ClearCurrentConsoleLine();
+						Console.SetCursorPosition(0, Console.CursorTop);
+						break;
+
+					case ConsoleKey.Backspace:
+						if (buf.Length == 0) break;
+						buf = buf.Substring(0, buf.Length - 1);
+						Console.CursorLeft--;
+						Console.Write(' ');
+						Console.CursorLeft--;
+						printStr(buf);
+						break;
+
+					case ConsoleKey.UpArrow:
+						if (CommandHistoryIndex == CommandHistory.Count)
+							break;
+						ExtendedConsole.ClearCurrentConsoleLine();
+						Console.CursorLeft = 0;
+						buf = CommandHistory[CommandHistory.Count - ++CommandHistoryIndex];
+						printStr(buf);
+						break;
+
+					case ConsoleKey.DownArrow:
+						if (CommandHistoryIndex == 0)
+							break;
+						ExtendedConsole.ClearCurrentConsoleLine();
+						Console.CursorLeft = 0;
+						buf = --CommandHistoryIndex == 0 ? "" : CommandHistory[CommandHistory.Count - CommandHistoryIndex];
+						printStr(buf);
+						break;
+
+					default:
+						if (buf.Length == Console.BufferWidth - 1) break;
+						if (char.IsLetterOrDigit(k.KeyChar) ||
+							char.IsPunctuation(k.KeyChar) ||
+							char.IsWhiteSpace(k.KeyChar) ||
+							char.IsSymbol(k.KeyChar)) {
+							buf += k.KeyChar;
+							printStr(buf);
+						}
+						break;
+				}
+			}
+		}
+
 		public void Run() {
-			Player.ChangeLocation(new Locations.OfficeBuilding.Hallway());
+			Player.ChangeLocation(new Locations.OfficeBuilding.TheCloset.DarkPlace());
 
 			PrintHeader();
 
 			Console.ForegroundColor = ConsoleColor.DarkGray;
 
-			PrintUserInterface();
-
 			do {
-				Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), 1);
-				Console.ForegroundColor = ConsoleColor.Cyan;
-				foreach (var item in Player.Items) {
-					Console.Write(item.Name);
-					Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), Console.CursorTop + 1);
-				}
+				DrawInventory();
 
 				OutputPane.Draw();
+
 				ExtendedConsole.ClearConsoleLine(49);
 				Console.SetCursorPosition(0, 49);
 				var str = ReadMyLine(PrintStr, Tabcallback).Trim();
-				
-				var match = Player.CurrentLocation.Verbs.FirstOrDefault(
-					o => o.FirstPart.Permute().Any(x => x.ToString().Equals(str, StringComparison.InvariantCultureIgnoreCase)))
-							??
-							Player.Verbs.FirstOrDefault(
+
+				var match = Player.Verbs.FirstOrDefault(
 								o => o.FirstPart.Permute().Any(x => x.ToString().Equals(str, StringComparison.InvariantCultureIgnoreCase)));
 
 				if (match?.Action != null) {
 					if (!CommandHistory.LastOrDefault()?.Equals(str, StringComparison.InvariantCultureIgnoreCase) ?? true)
 						CommandHistory.Add(str);
-					
-					if (_cusorLine != Console.BufferHeight - 4)
-						_cusorLine++;
+
 					OutputPane.WriteLine();
-					OutputPane.Write($"{str}> ".DarkGray());
+					//OutputPane.Write($"{str}> ".DarkGray());
 					match.Action(str);
 				} else {
 					ExtendedConsole.ClearConsoleLine(48);
+					Console.SetCursorPosition(0, 48);
 					"\rCould not find that command...".Red(true).Write();
 				}
 				CommandHistoryIndex = 0;
-			} while (true);
+			} while (Player.Verbs.Any());
 		}
 
-		private static void PrintUserInterface() {
-			Console.SetCursorPosition(0, 47);
-			Console.Write(new string('═', Console.BufferWidth - INV_WIDTH));
-			Console.Write('╩');
-			Console.Write(new string('═', INV_WIDTH - 1));
-			for (var i = 0; i < Console.BufferHeight - 3; i++) {
-				Console.SetCursorPosition(Console.BufferWidth - INV_WIDTH, i);
-				Console.Write('║');
+		private void DrawInventory() {
+			ExtendedConsole.ClearConsoleArea((short)(Console.BufferWidth - (INV_WIDTH - 1)), 1, INV_WIDTH - 1,
+				(short)(Console.BufferHeight - (1 + 3)));
+			Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), 1);
+			foreach (var item in Player.Items) {
+				if (item is LiquidContainerItem) {
+					item.Name.Write();
+					Console.ForegroundColor = ConsoleColor.DarkGray;
+					var li = item as LiquidContainerItem;
+					var ml = li.LiquidTypes.Max(o => o.Length);
+					var mt = li.LiquidUnits.Values.Max(o => o.Length);
+					var am = li.LiquidStorage.Values.Max(o => $"{o:0.##}".Length);
+					var mm = li.LiquidMax.Values.Max(o => $"{o:0.##}".Length);
+					foreach (var l in li.LiquidTypes.Where(o => li.LiquidStorage[o] > 0)) {
+						var a = li.LiquidStorage[l];
+						var m = li.LiquidMax[l];
+						var astr = $"{a:0.##}";
+						var mstr = $"{m:0.##}";
+						var amnt = $"{new string(' ', am - astr.Length)}{astr}/{mstr}{li.LiquidUnits[l]}{new string(' ', mt - li.LiquidUnits[l].Length)}{new string(' ', mm - mstr.Length)}";
+						var w = (INV_WIDTH - 7) - (ml + amnt.Length);
+						var p = (int)(w * (a / m));
+						Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), Console.CursorTop + 1);
+						var n = $"{l}{new string(' ', ml - l.Length)}";
+						Console.Write($"> {n} {amnt} {new string('█', p)}");
+						Console.Write(new string('░', w - p));
+					}
+				} else
+					item.Name.Write();
+				Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), Console.CursorTop + 1);
 			}
-			Console.SetCursorPosition(Console.BufferWidth - ((INV_WIDTH / 2) + 5), 0);
-			"Inventory".White(true).Write();
 		}
 
 		private void PrintHeader() {
@@ -247,7 +270,7 @@ namespace TheCloset {
 			Console.WriteLine();
 			(margin + "You wake up. Your head hurts..").White(true).Write();
 
-			OutputPane.WriteLine(new FormattedString((margin + "  You decide to press ").White(true), "[TAB]".DarkGray(true).DarkGrayBack()));
+			OutputPane.WriteLine(new FormattedString((margin + "  You decide to press [TAB]").White(true)));
 			OutputPane.WriteLine();
 		}
 

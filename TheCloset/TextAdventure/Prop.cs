@@ -4,14 +4,11 @@ using TheCloset.ConsoleHelpers;
 namespace TheCloset.TextAdventure {
 
 	public abstract class Prop : IVerbable {
-
-
 		#region Fields
 
 		public FormattedString Name;
 
 		#endregion Fields
-
 
 		#region Properties
 
@@ -26,7 +23,6 @@ namespace TheCloset.TextAdventure {
 		protected List<Verb> InternalVerbs { get; } = new List<Verb>();
 
 		#endregion Properties
-
 
 		#region Constructors
 
@@ -46,12 +42,10 @@ namespace TheCloset.TextAdventure {
 
 		#endregion Constructors
 
-
 		#region Methods
 
 		public override string ToString() => Name.ToString();
 
 		#endregion Methods
-
 	}
 }

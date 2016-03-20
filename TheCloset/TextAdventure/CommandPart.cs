@@ -6,16 +6,6 @@ using TheCloset.ConsoleHelpers;
 namespace TheCloset.TextAdventure {
 
 	public class CommandPart {
-
-		#region Enums
-
-		public enum CommandType {
-			StaticList,
-			Function
-		}
-
-		#endregion Enums
-
 		#region Fields
 
 		public readonly CommandType CType;
@@ -26,31 +16,12 @@ namespace TheCloset.TextAdventure {
 
 		#endregion Fields
 
-		#region Constructors
-
-		public CommandPart(FormattedString thispart, params CommandPart[] next) {
-			CType = CommandType.StaticList;
-			if (next.Length > 0 && next[0] != null) {
-				_staticList = new List<CommandPart>(next.Length);
-				_staticList.AddRange(next);
-			}
-			else
-				_staticList = new List<CommandPart>(0);
-			ThisPart = thispart;
-		}
-
-		public CommandPart(FormattedString thispart, Func<IEnumerable<CommandPart>> enumerate) {
-			CType = CommandType.Function;
-			_enumParts = enumerate;
-			ThisPart = thispart;
-		}
-
-		#endregion Constructors
-
 		#region Properties
 
-		public IEnumerable<CommandPart> NextParts {
-			get {
+		public IEnumerable<CommandPart> NextParts
+		{
+			get
+			{
 				switch (CType) {
 					case CommandType.StaticList:
 						foreach (var part in _staticList)
@@ -71,6 +42,26 @@ namespace TheCloset.TextAdventure {
 		public FormattedString ThisPart { get; }
 
 		#endregion Properties
+
+		#region Constructors
+
+		public CommandPart(FormattedString thispart, params CommandPart[] next) {
+			CType = CommandType.StaticList;
+			if (next.Length > 0 && next[0] != null) {
+				_staticList = new List<CommandPart>(next.Length);
+				_staticList.AddRange(next);
+			} else
+				_staticList = new List<CommandPart>(0);
+			ThisPart = thispart;
+		}
+
+		public CommandPart(FormattedString thispart, Func<IEnumerable<CommandPart>> enumerate) {
+			CType = CommandType.Function;
+			_enumParts = enumerate;
+			ThisPart = thispart;
+		}
+
+		#endregion Constructors
 
 		#region Methods
 
@@ -96,7 +87,7 @@ namespace TheCloset.TextAdventure {
 		public override bool Equals(object obj) {
 			if (ReferenceEquals(null, obj)) return false;
 			if (ReferenceEquals(this, obj)) return true;
-			return obj.GetType() == GetType() && Equals((CommandPart) obj);
+			return obj.GetType() == GetType() && Equals((CommandPart)obj);
 		}
 
 		public void Extend(params FormattedString[] p) {
@@ -111,6 +102,16 @@ namespace TheCloset.TextAdventure {
 				NextParts.First(o => o.ThisPart.Equals(pre[0])).Extend(pre.Skip(1).ToArray(), p);
 			else if (CType == CommandType.StaticList)
 				_staticList.Add(p);
+		}
+
+		public override int GetHashCode() {
+			unchecked {
+				var hashCode = (int)CType;
+				hashCode = (hashCode * 397) ^ (_staticList?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (_enumParts?.GetHashCode() ?? 0);
+				hashCode = (hashCode * 397) ^ (ThisPart?.GetHashCode() ?? 0);
+				return hashCode;
+			}
 		}
 
 		public IEnumerable<FormattedString> GetLevel(int level) {
@@ -159,6 +160,11 @@ namespace TheCloset.TextAdventure {
 			return LevelString().ToString();
 		}
 
+		protected bool Equals(CommandPart other) {
+			return CType == other.CType && Equals(_staticList, other._staticList) && Equals(_enumParts, other._enumParts) &&
+				   string.Equals(ThisPart.ToString(), other.ThisPart.ToString());
+		}
+
 		private int Depth(int cdepth) {
 			if (!NextParts.Any())
 				return cdepth;
@@ -167,23 +173,13 @@ namespace TheCloset.TextAdventure {
 
 		#endregion Methods
 
-		#region Equality
+		#region Enums
 
-		public override int GetHashCode() {
-			unchecked {
-				var hashCode = (int) CType;
-				hashCode = (hashCode*397) ^ (_staticList?.GetHashCode() ?? 0);
-				hashCode = (hashCode*397) ^ (_enumParts?.GetHashCode() ?? 0);
-				hashCode = (hashCode*397) ^ (ThisPart?.GetHashCode() ?? 0);
-				return hashCode;
-			}
+		public enum CommandType {
+			StaticList,
+			Function
 		}
 
-		protected bool Equals(CommandPart other) {
-			return CType == other.CType && Equals(_staticList, other._staticList) && Equals(_enumParts, other._enumParts) &&
-			       string.Equals(ThisPart.ToString(), other.ThisPart.ToString());
-		}
-
-		#endregion Equality
+		#endregion Enums
 	}
 }

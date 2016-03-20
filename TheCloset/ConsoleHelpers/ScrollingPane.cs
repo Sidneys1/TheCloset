@@ -5,13 +5,11 @@ using System.Linq;
 namespace TheCloset.ConsoleHelpers {
 
 	internal class ScrollingPane {
-
 		#region Fields
 
 		private readonly List<FormattedString> _entries = new List<FormattedString>();
 
 		#endregion Fields
-
 
 		#region Properties
 
@@ -27,7 +25,6 @@ namespace TheCloset.ConsoleHelpers {
 
 		#endregion Properties
 
-
 		#region Constructors
 
 		public ScrollingPane(int x, int y, int width, int height) {
@@ -39,7 +36,6 @@ namespace TheCloset.ConsoleHelpers {
 		}
 
 		#endregion Constructors
-
 
 		#region Methods
 
@@ -108,10 +104,12 @@ namespace TheCloset.ConsoleHelpers {
 			Write(str, f, b, r);
 			_entries.Add(new FormattedString());
 		}
+
 		public void WriteLine(FormattedString str) {
 			Write(str);
 			_entries.Add(new FormattedString());
 		}
+
 		public void WriteLine(FormattedText str) {
 			Write(str);
 			_entries.Add(new FormattedString());

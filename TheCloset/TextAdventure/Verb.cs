@@ -5,13 +5,20 @@ using TheCloset.ConsoleHelpers;
 namespace TheCloset.TextAdventure {
 
 	public class Verb {
-
 		#region Fields
 
 		public Action<string> Action;
 		public CommandPart FirstPart;
 
 		#endregion Fields
+
+		#region Properties
+
+		public int Depth => FirstPart.Depth();
+
+		public bool Enabled { get; set; } = true;
+
+		#endregion Properties
 
 		#region Constructors
 
@@ -28,13 +35,6 @@ namespace TheCloset.TextAdventure {
 		}
 
 		#endregion Constructors
-
-		#region Properties
-
-		public int Depth => FirstPart.Depth();
-		public bool Enabled { get; set; } = true;
-
-		#endregion Properties
 
 		//public void Extend(FormattedString ext) {
 		//	var parts = ext.Sections;

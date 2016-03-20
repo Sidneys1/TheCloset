@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using TheCloset.ConsoleHelpers;
 using TheCloset.GenericProps;
 using TheCloset.TextAdventure;
 
 namespace TheCloset.Locations.OfficeBuilding.Generic {
+
 	public enum OfficeType {
 		Mug,
 		Key,
@@ -13,14 +13,11 @@ namespace TheCloset.Locations.OfficeBuilding.Generic {
 	}
 
 	public class Office : Location {
-		#region Fields
-
-		private readonly Verb _walkVerb;
+		#region Properties
 
 		public Door DoorToHallway { get; }
 
-		#endregion Fields
-
+		#endregion Properties
 
 		#region Constructors
 
@@ -31,62 +28,25 @@ namespace TheCloset.Locations.OfficeBuilding.Generic {
 			DoorToHallway.DoorUsed += door => Player.Instance.ChangeLocation(door.To);
 			Props.Add(DoorToHallway);
 
-			Player.Instance.PlayerMoved += PlayerMoved;
-			_walkVerb = new Verb("Walk to", GetDistantPropNames, WalkToThe) { Enabled = Props.Except(AdjacentProps).Any() };
-			InternalVerbs.Add(_walkVerb);
-
 			InternalVerbs.Add(new Verb("Look around", s =>
 			{
-				var props = AdjacentProps.Select(o => o.Name).ToArray();
-				var near =
-					Props.Where(o => Math.Abs(Player.Instance.X - o.X) <= 3 && Math.Abs(Player.Instance.Y - o.Y) <= 3)
-						.Except(AdjacentProps)
-						.Select(o => o.Name)
-						.ToArray();
-				if (props.Length > 0) {
-					Game.Instace.OutputPane.Write("You are next to ");
-					if (props.Length == 1)
-						Game.Instace.OutputPane.Write(props.First() + ". ");
-					else {
-						Game.Instace.OutputPane.Write(FormattedString.Join(", ", props.WithoutLast()));
-						Game.Instace.OutputPane.Write(new FormattedString(", and ") + props.Last() + ". ");
-					}
-				}
-				if (near.Length > 0) {
-					Game.Instace.OutputPane.Write("Not far away is ");
-					if (props.Length == 1)
-						Game.Instace.OutputPane.Write(near.First() + ". ");
-					else {
-						Game.Instace.OutputPane.Write(FormattedString.Join(", ", near.WithoutLast()));
-						Game.Instace.OutputPane.Write(new FormattedString(", and ") + near.Last() + ". ");
-					}
+				var props = Props.Select(o => o.Name).ToArray();
+				if (props.Length <= 0) return;
+				Game.Instace.OutputPane.Write("You are next to ");
+				if (props.Length == 1)
+					Game.Instace.OutputPane.Write(props.First() + ".");
+				else {
+					Game.Instace.OutputPane.Write(FormattedString.Join(", ", props.WithoutLast()));
+					Game.Instace.OutputPane.Write(new FormattedString(", and ") + props.Last() + ".");
 				}
 			}));
 		}
 
 		#endregion Constructors
 
-
-		#region Methods
-
-		private IEnumerable<CommandPart> GetDistantPropNames() =>
-			Props.Except(AdjacentProps).Select(o => new CommandPart(o.Name));
-
-		private void PlayerMoved() =>
-			_walkVerb.Enabled = Props.Except(AdjacentProps).Any();
-
-		private void WalkToThe(string s) {
-			var p = Props.First(o => s.EndsWith(o.Name.ToString(), StringComparison.InvariantCultureIgnoreCase));
-			Player.Instance.SetPosition(p.X, p.Y);
-			Game.Instace.OutputPane.Write(new FormattedString("You walk to ") + p.Name);
-		}
-
-		#endregion Methods
-
-
 		#region Classes
 
-		private class Desk : Prop {
+		public class Desk : Prop {
 			#region Fields
 
 			private readonly Item _item;
@@ -103,6 +63,7 @@ namespace TheCloset.Locations.OfficeBuilding.Generic {
 					case OfficeType.Mug:
 						_item = new MugItem();
 						break;
+
 					case OfficeType.Key:
 						_item = new KeyItem();
 						break;
@@ -136,30 +97,46 @@ namespace TheCloset.Locations.OfficeBuilding.Generic {
 					Player.Instance.AddItem(_item);
 				}) { Enabled = false };
 				InternalVerbs.Add(_pickUpItemVerb);
-
 			}
 
 			#endregion Constructors
 
 			#region Classes
 
+			public class MugItem : LiquidContainerItem {
+				#region Fields
+
+				private readonly Verb _drinkVerb;
+
+				#endregion Fields
+
+				#region Constructors
+
+				public MugItem() : base("Mug", new LiquidDef("Coffee", "oz", 8)) {
+					LiquidStorage["Coffee"] = (float)(Game.Random.NextDouble() * 8);
+					_drinkVerb = new Verb("Drink some", () => LiquidStorage.Where(o => o.Value > 0).Select(o => new CommandPart(o.Key)), s =>
+					{
+						var t = s.Split(' ').Last();
+						var k = LiquidStorage.First(o => o.Key.Equals(t, StringComparison.InvariantCultureIgnoreCase)).Key;
+						if (k == null) return;
+						LiquidStorage[k] -= Math.Min(LiquidStorage[k], 0.5f);
+						_drinkVerb.Enabled = LiquidStorage.Any(o => o.Value > 0);
+					});
+					InnerVerbs.Add(_drinkVerb);
+				}
+
+				#endregion Constructors
+			}
+
 			private class KeyItem : Item {
-
 				#region Constructors
 
-				public KeyItem() : base("Key labelled 'T1'") { }
+				public KeyItem() : base("Key labelled 'T1'") {
+				}
 
 				#endregion Constructors
 			}
 
-			private class MugItem : Item {
-
-				#region Constructors
-
-				public MugItem() : base("Mug") { }
-
-				#endregion Constructors
-			}
 			#endregion Classes
 		}
 

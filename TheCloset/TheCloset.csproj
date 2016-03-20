@@ -54,8 +54,6 @@
     <Compile Include="Locations\Exit.cs" />
     <Compile Include="Locations\OfficeBuilding\Generic\Office.cs" />
     <Compile Include="Locations\OfficeBuilding\Hallway.cs" />
-    <Compile Include="Locations\OfficeBuilding\InTheCloset\DarkPlace.cs" />
-    <Compile Include="Locations\OfficeBuilding\InTheCloset\OnTheBox.cs" />
     <Compile Include="Locations\OfficeBuilding\OfficeSupplyCloset.cs" />
     <Compile Include="Locations\OfficeBuilding\TheCloset.cs" />
     <Compile Include="Locations\OfficeBuilding\TheVents.cs" />

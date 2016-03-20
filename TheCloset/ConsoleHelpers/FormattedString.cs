@@ -6,8 +6,6 @@ using System.Text;
 namespace TheCloset.ConsoleHelpers {
 
 	public class FormattedString {
-
-
 		#region Properties
 
 		public int Length => Sections.Sum(o => o.Text.Length);
@@ -15,7 +13,6 @@ namespace TheCloset.ConsoleHelpers {
 		public List<FormattedText> Sections { get; } = new List<FormattedText>();
 
 		#endregion Properties
-
 
 		#region Constructors
 
@@ -28,7 +25,6 @@ namespace TheCloset.ConsoleHelpers {
 		}
 
 		#endregion Constructors
-
 
 		#region Methods
 
@@ -94,6 +90,7 @@ namespace TheCloset.ConsoleHelpers {
 
 		public override string ToString() =>
 																			Sections.Aggregate(new StringBuilder(), (builder, text) => builder.Append(text.Text)).ToString();
+
 		public void Write() {
 			foreach (var sec in GetToPrint())
 				Console.Write(sec);

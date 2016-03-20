@@ -1,46 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using TheCloset.ConsoleHelpers;
-using TheCloset.Locations.OfficeBuilding.InTheCloset;
 using TheCloset.TextAdventure;
 
 namespace TheCloset.Locations.OfficeBuilding {
 
 	internal class TheVents : Location {
-
-
 		#region Constructors
 
-		public TheVents(OnTheBox closet) {
+		public TheVents(TheCloset.OnTheBox closet) {
 			Props.Add(new Vent(this, closet, "first vent", false, 3, 2,
 				new FormattedString("You are in a ", "Utility Closet".Yellow(), ".")));
 			Props.Add(new Vent(this, new Hallway(), "second vent", false, 3, 5,
 				new FormattedString("You are in a ", "Hallway".Yellow(), ".")));
-			InternalVerbs.Add(new Verb("Crawl to the", GetDistantPropNames, WalkToThe));
 		}
 
 		#endregion Constructors
 
-
-		#region Methods
-
-		private IEnumerable<CommandPart> GetDistantPropNames()
-			=> Props.Except(AdjacentProps).Select(o => new CommandPart(o.Name));
-
-		private void WalkToThe(string s) {
-			var p = Props.First(o => s.EndsWith(o.Name.ToString(), StringComparison.InvariantCultureIgnoreCase));
-			Player.Instance.SetPosition(p.X, p.Y);
-			Game.Instace.OutputPane.Write($"You crawl to the {p.Name}");
-		}
-
-		#endregion Methods
-
-
 		#region Classes
 
 		public class Vent : Prop {
-
 			#region Fields
 
 			private readonly FormattedString _post;
@@ -48,7 +25,6 @@ namespace TheCloset.Locations.OfficeBuilding {
 			private readonly bool _up;
 
 			#endregion Fields
-
 
 			#region Constructors
 
@@ -61,7 +37,6 @@ namespace TheCloset.Locations.OfficeBuilding {
 			}
 
 			#endregion Constructors
-
 
 			#region Methods
 

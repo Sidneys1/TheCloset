@@ -3,7 +3,6 @@
 namespace TheCloset.TextAdventure {
 
 	public interface IVerbable {
-
 		#region Properties
 
 		IEnumerable<Verb> Verbs { get; }

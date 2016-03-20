@@ -1,5 +1,6 @@
 ﻿using TheCloset.TextAdventure;
 
 namespace TheCloset.Locations {
-	internal class Exit : Location {}
+
+	internal class Exit : Location { }
 }
