@@ -51,10 +51,9 @@
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GenericProps\Door.cs" />
-    <Compile Include="Locations\Exit.cs" />
+    <Compile Include="Locations\OfficeBuilding\Exit.cs" />
     <Compile Include="Locations\OfficeBuilding\Generic\Office.cs" />
     <Compile Include="Locations\OfficeBuilding\Hallway.cs" />
-    <Compile Include="Locations\OfficeBuilding\OfficeSupplyCloset.cs" />
     <Compile Include="Locations\OfficeBuilding\TheCloset.cs" />
     <Compile Include="Locations\OfficeBuilding\TheVents.cs" />
     <Compile Include="Program.cs" />

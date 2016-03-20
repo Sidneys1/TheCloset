@@ -7,6 +7,9 @@ namespace TheCloset {
 	public static class ExtensionMethods {
 		#region Methods
 
+		public static FormattedText Reset(this string str)
+			=> new FormattedText(str, reset:true);
+
 		public static FormattedText Blue(this string str, bool dark = false)
 			=> new FormattedText(str, dark ? ConsoleColor.DarkBlue : ConsoleColor.Blue);
 

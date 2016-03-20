@@ -40,7 +40,7 @@ namespace TheCloset.ConsoleHelpers {
 
 			Console.SetCursorPosition(X, Y);
 			var x = opts.GroupBy(o => o.Length + post.Length > maxl ? o.ToString().Substring(0, Math.Min(o.Length, maxl)).White() + post : o);
-			var str = x.Select(o => o.First()).Aggregate(header, (s, formattedString) => s += formattedString + ", ".DarkGray());
+			var str = x.Select(o => o.First()).Aggregate(header, (s, formattedString) => s + formattedString + ", ".DarkGray());
 			str.Sections.RemoveAt(str.Sections.Count - 1);
 			str.Write();
 		}

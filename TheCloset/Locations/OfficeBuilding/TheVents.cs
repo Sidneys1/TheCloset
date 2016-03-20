@@ -6,10 +6,10 @@ namespace TheCloset.Locations.OfficeBuilding {
 	internal class TheVents : Location {
 		#region Constructors
 
-		public TheVents(TheCloset.OnTheBox closet) {
+		public TheVents(TheCloset.OnTheBox closet) : base("the Vents") {
 			Props.Add(new Vent(this, closet, "first vent", false, 3, 2,
 				new FormattedString("You are in a ", "Utility Closet".Yellow(), ".")));
-			Props.Add(new Vent(this, new Hallway(), "second vent", false, 3, 5,
+			Props.Add(new Vent(this, Hallway.Instance, "second vent", false, 3, 5,
 				new FormattedString("You are in a ", "Hallway".Yellow(), ".")));
 		}
 

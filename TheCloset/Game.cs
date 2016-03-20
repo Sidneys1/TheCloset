@@ -195,11 +195,8 @@ namespace TheCloset {
 
 		public void Run() {
 			Player.ChangeLocation(new Locations.OfficeBuilding.TheCloset.DarkPlace());
-
 			PrintHeader();
-
 			Console.ForegroundColor = ConsoleColor.DarkGray;
-
 			do {
 				DrawInventory();
 
@@ -216,7 +213,8 @@ namespace TheCloset {
 					if (!CommandHistory.LastOrDefault()?.Equals(str, StringComparison.InvariantCultureIgnoreCase) ?? true)
 						CommandHistory.Add(str);
 
-					OutputPane.WriteLine();
+					if (OutputPane.Entries.Last().Length != 0)
+						OutputPane.WriteLine();
 					//OutputPane.Write($"{str}> ".DarkGray());
 					match.Action(str);
 				} else {
@@ -234,7 +232,7 @@ namespace TheCloset {
 			Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), 1);
 			foreach (var item in Player.Items) {
 				if (item is LiquidContainerItem) {
-					item.Name.Write();
+					("» " + item.Name).Write();
 					Console.ForegroundColor = ConsoleColor.DarkGray;
 					var li = item as LiquidContainerItem;
 					var ml = li.LiquidTypes.Max(o => o.Length);
@@ -251,11 +249,11 @@ namespace TheCloset {
 						var p = (int)(w * (a / m));
 						Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), Console.CursorTop + 1);
 						var n = $"{l}{new string(' ', ml - l.Length)}";
-						Console.Write($"> {n} {amnt} {new string('█', p)}");
+						Console.Write($"∙ {n} {amnt} {new string('█', p)}");
 						Console.Write(new string('░', w - p));
 					}
 				} else
-					item.Name.Write();
+					("» " + item.Name).Write();
 				Console.SetCursorPosition(Console.BufferWidth - (INV_WIDTH - 2), Console.CursorTop + 1);
 			}
 		}

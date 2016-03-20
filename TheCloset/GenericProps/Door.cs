@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using TheCloset.ConsoleHelpers;
 using TheCloset.TextAdventure;
 
@@ -28,18 +29,30 @@ namespace TheCloset.GenericProps {
 
 		public Door(Location from, Location to, string name, int x, int y, FormattedString useMsg = null,
 					string lockMsg = "The door is locked.") : base(from, name, x, y) {
-			_useMsg = useMsg ?? "You use the door.";
-			_lockMsg = lockMsg;
 			To = to;
-			InternalVerbs.Add(new Verb("Use the " + Name, UseAction));
+			_useMsg = useMsg ?? "You use the door to " + To.Name + ".".Reset();
+			_lockMsg = lockMsg;
+			InternalVerbs.Add(new Verb("Use", GetName, UseAction));
+
+			DoorUsed += DefaultDoorAction;
+		}
+
+		private IEnumerable<CommandPart> GetName() {
+			yield return new CommandPart(Name);
+		}
+
+		public void DefaultDoorAction(Door obj) {
+			if (!Locked && To != null) Player.Instance.ChangeLocation(To);
 		}
 
 		public Door(Location from, Location to, FormattedString name, int x, int y, FormattedString useMsg = null,
 					string lockMsg = "The door is locked.") : base(from, name, x, y) {
-			_useMsg = useMsg ?? "You use the door.";
-			_lockMsg = lockMsg;
 			To = to;
-			InternalVerbs.Add(new Verb("Use the " + Name, UseAction));
+			_useMsg = useMsg ?? "You use the door to " + To.Name + ".".Reset();
+			_lockMsg = lockMsg;
+			InternalVerbs.Add(new Verb("Use", GetName, UseAction));
+
+			DoorUsed += DefaultDoorAction;
 		}
 
 		#endregion Constructors

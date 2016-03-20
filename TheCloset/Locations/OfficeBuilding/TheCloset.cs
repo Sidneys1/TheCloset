@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using TheCloset.ConsoleHelpers;
 using TheCloset.GenericProps;
@@ -17,15 +16,15 @@ namespace TheCloset.Locations.OfficeBuilding {
 
 		#region Constructors
 
-		public TheCloset() {
+		public TheCloset() : base("the Closet") {
 			Instance = this;
 			Props.Add(new Shelf(this));
 			Props.Add(new Toolbox(this));
 			Props.Add(new BlindFold(this));
 			Props.Add(new Rope(this));
 			Props.Add(new Box(this));
-			DoorToHallway = new Door(this, Hallway.Instance, "the door", 2, 3, lockMsg: "There is no handle.") { Locked = true };
-			DoorToHallway.DoorUsed += door => { if (!door.Locked) Player.Instance.ChangeLocation(Hallway.Instance); };
+			DoorToHallway = new Door(this, new Hallway(), "the door", 2, 3, lockMsg: "There is no handle. You could probably open it from the other side...") { Locked = true };
+			//DoorToHallway.DoorUsed += door => { if (!door.Locked) Player.Instance.ChangeLocation(Hallway.Instance); };
 			Props.Add(DoorToHallway);
 
 			InternalVerbs.Add(new Verb("Look around", s =>
@@ -59,7 +58,7 @@ namespace TheCloset.Locations.OfficeBuilding {
 
 			#region Constructors
 
-			public DarkPlace() {
+			public DarkPlace() : base("a Dark Place") {
 				_blind = new Verb(new FormattedString("Remove the ", "blindfold".Cyan()), BlindMethod);
 				_escape = new Verb("Exert yourself!", EscapeMethod);
 				_wiggle = new Verb("Wiggle my arms", WiggleMethod);
@@ -74,9 +73,10 @@ namespace TheCloset.Locations.OfficeBuilding {
 
 			private void BlindMethod(string s) {
 				Game.PrintUserInterface();
-				Game.Instace.OutputPane.Write(new FormattedString("You reach up and remove your ", "blindfold".Cyan(), ". You are in a ", "Closet".Yellow(), "."));
+				var c = new TheCloset();
+				Game.Instace.OutputPane.Write("You reach up and remove your " + "blindfold".Cyan() + ". You are in " + c.Name + ".");
 				InternalVerbs.Remove(_blind);
-				Player.Instance.ChangeLocation(new TheCloset());
+				Player.Instance.ChangeLocation(c);
 			}
 
 			private void EscapeMethod(string s) {
@@ -111,7 +111,7 @@ namespace TheCloset.Locations.OfficeBuilding {
 
 			#region Constructors
 
-			public OnTheBox(TheCloset closet) {
+			public OnTheBox(TheCloset closet): base("the Box") {
 				_closet = closet;
 				_unscrewVerb = new Verb("Unscrew the vent", UnscrewVerb);
 				InternalVerbs.Add(new Verb("Climb down", ClimbDownVerb));
@@ -132,7 +132,6 @@ namespace TheCloset.Locations.OfficeBuilding {
 						"Screwdriver".Cyan(), "."));
 					return;
 				}
-				var pre = Console.ForegroundColor;
 				Game.Instace.OutputPane.Write(new FormattedString("You use the ", "Screwdriver".Cyan(),
 					" to open the ", "vent".Magenta(), "."));
 				InternalVerbs.Remove(_unscrewVerb);

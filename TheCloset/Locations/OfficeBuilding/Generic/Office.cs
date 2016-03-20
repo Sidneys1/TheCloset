@@ -21,11 +21,11 @@ namespace TheCloset.Locations.OfficeBuilding.Generic {
 
 		#region Constructors
 
-		public Office(OfficeType type, bool top, int x, int y) {
+		public Office(string name, OfficeType type, bool top, int x, int y) : base(name) {
 			Props.Add(new Desk(this, type, x - 1, top ? y - 3 : y + 3));
 
 			DoorToHallway = new Door(this, Hallway.Instance, "the door", x, y);
-			DoorToHallway.DoorUsed += door => Player.Instance.ChangeLocation(door.To);
+			//DoorToHallway.DoorUsed += door => Player.Instance.ChangeLocation(door.To);
 			Props.Add(DoorToHallway);
 
 			InternalVerbs.Add(new Verb("Look around", s =>
